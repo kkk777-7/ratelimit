@@ -53,7 +53,7 @@ func TlsConfigFromFiles(certFile, keyFile, caCertFile string, caType CAType, ski
 		config.Certificates = append(config.Certificates, tlsKeyPair)
 	}
 	if caCertFile != "" {
-		certPool, err := LoadCertPool(caCertFile)
+		certPool, err := LoadCertPool(caCertFile, caType)
 		if err != nil {
 			panic(err)
 		}
@@ -68,14 +68,19 @@ func TlsConfigFromFiles(certFile, keyFile, caCertFile string, caType CAType, ski
 	return config
 }
 
-// LoadCertPool returns the system cert pool with the certificates in caCertFile appended.
-func LoadCertPool(caCertFile string) (*x509.CertPool, error) {
+// LoadCertPool returns a cert pool with the certificates in caCertFile. For a ServerCA, the
+// certificates are appended to the system cert pool. For a ClientCA, only the certificates in
+// caCertFile are trusted, so that client certs issued by public CAs are not accepted.
+func LoadCertPool(caCertFile string, caType CAType) (*x509.CertPool, error) {
 	caCert, err := os.ReadFile(caCertFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file: %s: %w", caCertFile, err)
 	}
-	// try to get the SystemCertPool first
-	certPool, _ := x509.SystemCertPool()
+	var certPool *x509.CertPool
+	if caType == ServerCA {
+		// try to get the SystemCertPool first
+		certPool, _ = x509.SystemCertPool()
+	}
 	if certPool == nil {
 		certPool = x509.NewCertPool()
 	}

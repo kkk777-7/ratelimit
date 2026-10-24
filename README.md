@@ -1633,7 +1633,7 @@ TLS must be enabled on the gRPC endpoint in order for mTLS to work see [TLS](#TL
 
 The following variables can be set to enable mTLS on the Ratelimit service.
 
-1. `GRPC_CLIENT_TLS_CACERT` - Path to the file containing the client CA certificate.
+1. `GRPC_CLIENT_TLS_CACERT` - Path to the file containing the client CA certificate. Only the CA certificates in this file are trusted to verify client certificates, the system root CAs are not.
 1. `GRPC_CLIENT_TLS_SAN` - (Optional) DNS Name to validate from the client cert during mTLS auth
 
 Ratelimit uses [goruntime](https://github.com/lyft/goruntime) to watch the client CA certificate and will hot reload it on changes. New connections are verified against the reloaded CA, while established connections are kept.

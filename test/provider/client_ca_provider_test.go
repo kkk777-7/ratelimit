@@ -46,14 +46,14 @@ func writeCA(t *testing.T, path, cn string) {
 func TestClientCAProviderReload(t *testing.T) {
 	caFile := filepath.Join(t.TempDir(), "ca.crt")
 	writeCA(t, caFile, "initial-ca")
-	initialPool, err := utils.LoadCertPool(caFile)
+	initialPool, err := utils.LoadCertPool(caFile, utils.ClientCA)
 	require.NoError(t, err)
 
 	p := provider.NewClientCAProvider(settings.Settings{}, gostats.NewStore(gostats.NewNullSink(), false), caFile)
 	assert.True(t, p.ClientCAs().Equal(initialPool))
 
 	writeCA(t, caFile, "rotated-ca")
-	rotatedPool, err := utils.LoadCertPool(caFile)
+	rotatedPool, err := utils.LoadCertPool(caFile, utils.ClientCA)
 	require.NoError(t, err)
 	assert.False(t, rotatedPool.Equal(initialPool))
 
@@ -65,7 +65,7 @@ func TestClientCAProviderReload(t *testing.T) {
 func TestClientCAProviderKeepsCAOnInvalidUpdate(t *testing.T) {
 	caFile := filepath.Join(t.TempDir(), "ca.crt")
 	writeCA(t, caFile, "initial-ca")
-	initialPool, err := utils.LoadCertPool(caFile)
+	initialPool, err := utils.LoadCertPool(caFile, utils.ClientCA)
 	require.NoError(t, err)
 
 	p := provider.NewClientCAProvider(settings.Settings{}, gostats.NewStore(gostats.NewNullSink(), false), caFile)
@@ -80,7 +80,7 @@ func TestClientCAProviderKeepsCAOnInvalidUpdate(t *testing.T) {
 
 	// A valid CA written after the invalid one is still picked up, so the watcher kept running
 	writeCA(t, caFile, "rotated-ca")
-	rotatedPool, err := utils.LoadCertPool(caFile)
+	rotatedPool, err := utils.LoadCertPool(caFile, utils.ClientCA)
 	require.NoError(t, err)
 	assert.Eventually(t, func() bool {
 		return p.ClientCAs().Equal(rotatedPool)

@@ -47,7 +47,7 @@ func (p *ClientCAProvider) watch() {
 
 // reloadClientCAs loads the client CA file and updates the x509.CertPool in memory
 func (p *ClientCAProvider) reloadClientCAs() {
-	pool, err := utils.LoadCertPool(p.caFile)
+	pool, err := utils.LoadCertPool(p.caFile, utils.ClientCA)
 	if err != nil {
 		logger.Errorf("ClientCAProvider failed to load client CA (%s): %v", p.caFile, err)
 		// panic in case there is no client CA already loaded as this would mean starting up without client verification
